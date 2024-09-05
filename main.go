@@ -29,6 +29,7 @@ func main() {
 	r.POST("/login", controllers.Login)
 	r.POST("/refresh", controllers.RefreshToken)
 	r.GET("/user", middlewares.CheckAuth, controllers.UserProfile)
+	r.POST("/user", middlewares.CheckAuth, controllers.UserUpdate)
 	r.GET("/", middlewares.CheckAuth, func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Access granted to protected route"})
 	})

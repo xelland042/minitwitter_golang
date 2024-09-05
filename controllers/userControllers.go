@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -219,5 +220,66 @@ func UserProfile(c *gin.Context) {
 		"email":    u.Email,
 		"bio":      u.Bio,
 		"picture":  profilePictureURL,
+	})
+}
+
+func UserUpdate(c *gin.Context) {
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	currentUser := user.(models.User)
+
+	if err := c.Request.ParseMultipartForm(10 << 20); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form"})
+		return
+	}
+
+	username := c.Request.FormValue("UserName")
+	email := c.Request.FormValue("Email")
+	bio := c.Request.FormValue("Bio")
+
+	var filePath string
+	file, err := c.FormFile("Picture")
+	if err == nil {
+		fileName := time.Now().Format("20060102150405") + filepath.Ext(file.Filename)
+		filePath = filepath.Join("uploads", fileName)
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			return
+		}
+	} else {
+		filePath = currentUser.Picture
+	}
+
+	fmt.Println(username)
+
+	if username != "" {
+		currentUser.UserName = username
+	}
+	if email != "" {
+		currentUser.Email = email
+	}
+	if bio != "" {
+		currentUser.Bio = bio
+	}
+	if filePath != "" {
+		currentUser.Picture = filePath
+	}
+
+	if err := initializers.DB.Save(&currentUser).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"user": gin.H{
+			"username": currentUser.UserName,
+			"email":    currentUser.Email,
+			"bio":      currentUser.Bio,
+			"picture":  currentUser.Picture,
+		},
 	})
 }
