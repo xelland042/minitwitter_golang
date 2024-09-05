@@ -110,6 +110,13 @@ func TweetRetrieve(c *gin.Context) {
 		return
 	}
 
+	var likeCount int64
+	err = initializers.DB.Model(&models.LikeModel{}).Where("tweet_id = ?", tweet.ID).Count(&likeCount).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error counting likes"})
+		return
+	}
+
 	response := utils.TweetResponse{
 		ID:        tweet.ID,
 		CreatedAt: tweet.CreatedAt.Format(time.RFC3339),
@@ -117,6 +124,7 @@ func TweetRetrieve(c *gin.Context) {
 		Title:     tweet.Title,
 		Body:      tweet.Body,
 		File:      tweet.File,
+		LikeCount: likeCount,
 	}
 
 	c.JSON(http.StatusOK, gin.H{

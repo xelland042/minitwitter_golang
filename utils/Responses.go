@@ -24,4 +24,5 @@ type TweetResponse struct {
 	Title     string `json:"title"`
 	Body      string `json:"body"`
 	File      string `json:"file"`
+	LikeCount int64
 }
