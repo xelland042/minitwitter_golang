@@ -30,14 +30,22 @@ func main() {
 	r.POST("/login", controllers.Login)
 	r.POST("/refresh", controllers.RefreshToken)
 	r.GET("/user", middlewares.CheckAuth, controllers.UserProfile)
-	r.POST("/user", middlewares.CheckAuth, controllers.UserUpdate)
+	r.PATCH("/user", middlewares.CheckAuth, controllers.UserUpdate)
 	r.POST("/change-password", middlewares.CheckAuth, controllers.ChangePassword)
 	r.GET("/", middlewares.CheckAuth, func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Access granted to protected route"})
 	})
 
 	// Tweets endpoint
+	r.GET("/tweet/:id", middlewares.CheckAuth, controllers.TweetRetrieve)
+	r.PATCH("/tweet/:id", middlewares.CheckAuth, controllers.TweetUpdate)
+	r.DELETE("/tweet/:id", middlewares.CheckAuth, controllers.TweetDelete)
+	r.GET("/tweet", middlewares.CheckAuth, controllers.TweetList)
 	r.POST("/create-tweet", middlewares.CheckAuth, controllers.CreateTweet)
+
+	// Followers endpoint
+	r.POST("/follow/:id", middlewares.CheckAuth, controllers.FollowUser)
+	r.POST("/unfollow/:id", middlewares.CheckAuth, controllers.UnFollow)
 	runErr := r.Run()
 	if runErr != nil {
 		return

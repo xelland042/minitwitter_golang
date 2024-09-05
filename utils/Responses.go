@@ -16,3 +16,12 @@ type ChangePasswordInput struct {
 	CurrentPassword string `json:"current_password" binding:"required"`
 	NewPassword     string `json:"new_password" binding:"required"`
 }
+
+type TweetResponse struct {
+	ID        uint   `json:"id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	File      string `json:"file"`
+}

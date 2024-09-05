@@ -9,8 +9,9 @@ func SyncDataBase() {
 	errUser := DB.AutoMigrate(
 		&models.User{},
 		&models.Tweet{},
+		&models.FollowModel{},
 	)
 	if errUser != nil {
-		log.Fatal("Failed to AutoMigrate User!")
+		log.Fatal("Failed to AutoMigrate!")
 	}
 }

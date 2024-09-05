@@ -247,7 +247,7 @@ func UserUpdate(c *gin.Context) {
 	file, err := c.FormFile("Picture")
 	if err == nil {
 		fileName := time.Now().Format("20060102150405") + filepath.Ext(file.Filename)
-		filePath = filepath.Join("uploads", fileName)
+		filePath = filepath.Join("uploads/profile_pictures", fileName)
 		if err := c.SaveUploadedFile(file, filePath); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 			return

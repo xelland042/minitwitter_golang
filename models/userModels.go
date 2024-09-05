@@ -9,4 +9,5 @@ type User struct {
 	Password string `gorm:"column:password;not null"`
 	Bio      string
 	Picture  string
+	Tweets   []Tweet `gorm:"foreignKey:AuthorID"`
 }
