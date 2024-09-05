@@ -10,6 +10,7 @@ func SyncDataBase() {
 		&models.User{},
 		&models.Tweet{},
 		&models.FollowModel{},
+		&models.LikeModel{},
 	)
 	if errUser != nil {
 		log.Fatal("Failed to AutoMigrate!")

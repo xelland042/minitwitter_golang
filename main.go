@@ -48,6 +48,10 @@ func main() {
 	r.POST("/unfollow/:id", middlewares.CheckAuth, controllers.UnFollow)
 	r.GET("/followers", middlewares.CheckAuth, controllers.ListFollowers)
 	r.GET("/followings", middlewares.CheckAuth, controllers.ListFollowings)
+
+	// Tweet Like endpoint
+	r.POST("/tweet/:id/like", middlewares.CheckAuth, controllers.LikeTweet)
+	r.DELETE("/tweet/:id/unlike", middlewares.CheckAuth, controllers.UnlikeTweet)
 	runErr := r.Run()
 	if runErr != nil {
 		return

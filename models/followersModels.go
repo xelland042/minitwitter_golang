@@ -9,3 +9,11 @@ type FollowModel struct {
 	FollowedBy   User
 	FollowedByID uint `json:"followed_id"`
 }
+
+type LikeModel struct {
+	gorm.Model
+	User    User
+	UserID  uint
+	Tweet   Tweet
+	TweetID uint
+}

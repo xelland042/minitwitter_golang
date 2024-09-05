@@ -192,3 +192,118 @@ func ListFollowings(c *gin.Context) {
 		"followings": followings,
 	})
 }
+
+func LikeTweet(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID cannot be empty"})
+		return
+	}
+
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	userModel, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	var tweet models.Tweet
+	err = initializers.DB.Where("id = ?", intID).First(&tweet).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Tweet not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database query error"})
+		}
+		return
+	}
+
+	var like models.LikeModel
+	err = initializers.DB.Where("user_id = ? AND tweet_id = ?", userModel.ID, tweet.ID).First(&like).Error
+
+	if err == nil {
+		// Like already exists, so return an error
+		c.JSON(http.StatusConflict, gin.H{"error": "Tweet already liked"})
+		return
+	}
+
+	// Create the like
+	like = models.LikeModel{
+		UserID:  userModel.ID,
+		TweetID: tweet.ID,
+	}
+
+	if err := initializers.DB.Create(&like).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like tweet"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tweet liked successfully"})
+}
+
+func UnlikeTweet(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID cannot be empty"})
+		return
+	}
+
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		return
+	}
+
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	userModel, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	var tweet models.Tweet
+	err = initializers.DB.Where("id = ?", intID).First(&tweet).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Tweet not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database query error"})
+		}
+		return
+	}
+
+	var like models.LikeModel
+	err = initializers.DB.Where("user_id = ? AND tweet_id = ?", userModel.ID, tweet.ID).First(&like).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// Like does not exist, so return an error
+		c.JSON(http.StatusNotFound, gin.H{"error": "Like not found"})
+		return
+	}
+
+	// Delete the like
+	if err := initializers.DB.Delete(&like).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlike tweet"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tweet unliked successfully"})
+}
