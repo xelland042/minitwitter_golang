@@ -110,7 +110,7 @@ func UnFollow(c *gin.Context) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		} else {
-			fmt.Println(err) // Logging the error for debugging purposes
+			fmt.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database query error"})
 		}
 		return
@@ -133,4 +133,62 @@ func UnFollow(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, gin.H{"message": "Unfollowed successfully"})
+}
+
+func ListFollowers(c *gin.Context) {
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	currentUser, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	var followers []models.User
+	err := initializers.DB.Model(&models.FollowModel{}).
+		Where("followed_by_id = ?", currentUser.ID).
+		Joins("JOIN users ON users.id = follow_models.following_id").
+		Find(&followers).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve followers"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"followers": followers,
+	})
+}
+
+func ListFollowings(c *gin.Context) {
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	currentUser, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	var followings []models.User
+	err := initializers.DB.Model(&models.FollowModel{}).
+		Where("following_id = ?", currentUser.ID).
+		Joins("JOIN users ON users.id = follow_models.followed_by_id").
+		Find(&followings).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve followings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"followings": followings,
+	})
 }

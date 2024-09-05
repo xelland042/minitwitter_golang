@@ -46,6 +46,8 @@ func main() {
 	// Followers endpoint
 	r.POST("/follow/:id", middlewares.CheckAuth, controllers.FollowUser)
 	r.POST("/unfollow/:id", middlewares.CheckAuth, controllers.UnFollow)
+	r.GET("/followers", middlewares.CheckAuth, controllers.ListFollowers)
+	r.GET("/followings", middlewares.CheckAuth, controllers.ListFollowings)
 	runErr := r.Run()
 	if runErr != nil {
 		return
