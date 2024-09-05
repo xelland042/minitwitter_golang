@@ -93,6 +93,8 @@ func SignUp(c *gin.Context) {
 func Login(c *gin.Context) {
 	var loginInput utils.LoginInput
 
+	fmt.Println(loginInput)
+
 	if errAuthIn := c.ShouldBindJSON(&loginInput); errAuthIn != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errAuthIn.Error()})
 		return

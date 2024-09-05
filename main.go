@@ -16,15 +16,16 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	r.MaxMultipartMemory = 10 << 20
-	authorized := r.Group("/uploads")
-	authorized.Use(middlewares.CheckAuth) // Apply your authentication middleware
+	r.MaxMultipartMemory = 30 << 20
+	uploads := r.Group("/uploads")
+	uploads.Use(middlewares.CheckAuth) // Apply your authentication middleware
 	{
-		authorized.GET("/*filepath", func(c *gin.Context) {
+		uploads.GET("/*filepath", func(c *gin.Context) {
 			filepath := c.Param("filepath")
 			c.File("./uploads" + filepath)
 		})
 	}
+	//Users endpoints
 	r.POST("/signup", controllers.SignUp)
 	r.POST("/login", controllers.Login)
 	r.POST("/refresh", controllers.RefreshToken)
@@ -34,6 +35,9 @@ func main() {
 	r.GET("/", middlewares.CheckAuth, func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Access granted to protected route"})
 	})
+
+	// Tweets endpoint
+	r.POST("/create-tweet", middlewares.CheckAuth, controllers.CreateTweet)
 	runErr := r.Run()
 	if runErr != nil {
 		return

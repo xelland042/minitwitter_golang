@@ -8,12 +8,17 @@ type AuthInput struct {
 }
 
 type LoginInput struct {
-	UserName string
-	Email    string
+	UserName string `json:"username"`
+	Email    string `json:"email"`
 	Password string `binding:"required"`
 }
 
 type UserResponse struct {
 	UserName string `json:"username"`
 	Email    string `json:"email"`
+}
+
+type TweetCreate struct {
+	Title string `json:"title" binding:"required"`
+	Body  string `json:"body" binding:"required"`
 }
