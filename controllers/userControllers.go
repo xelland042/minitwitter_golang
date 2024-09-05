@@ -66,7 +66,6 @@ func SignUp(c *gin.Context) {
 		if errFile != nil {
 			return
 		}
-		filePath = "uploads/" + file.Filename
 	} else {
 		filePath = ""
 	}
@@ -193,5 +192,32 @@ func RefreshToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": accessTokenString,
+	})
+}
+
+func UserProfile(c *gin.Context) {
+	user, exists := c.Get("currentUser")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	u, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User data is invalid"})
+		return
+	}
+
+	profilePictureURL := ""
+	if u.Picture != "" {
+		profilePictureURL = u.Picture
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"username": u.UserName,
+		"email":    u.Email,
+		"bio":      u.Bio,
+		"picture":  profilePictureURL,
 	})
 }

@@ -17,10 +17,18 @@ func init() {
 func main() {
 	r := gin.Default()
 	r.MaxMultipartMemory = 10 << 20
-	r.Static("/uploads", "./uploads")
+	authorized := r.Group("/uploads")
+	authorized.Use(middlewares.CheckAuth) // Apply your authentication middleware
+	{
+		authorized.GET("/*filepath", func(c *gin.Context) {
+			filepath := c.Param("filepath")
+			c.File("./uploads" + filepath)
+		})
+	}
 	r.POST("/signup", controllers.SignUp)
 	r.POST("/login", controllers.Login)
 	r.POST("/refresh", controllers.RefreshToken)
+	r.GET("/user", middlewares.CheckAuth, controllers.UserProfile)
 	r.GET("/", middlewares.CheckAuth, func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Access granted to protected route"})
 	})
