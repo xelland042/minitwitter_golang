@@ -11,3 +11,8 @@ type UserInfoResponse struct {
 	Bio      string `json:"bio"`
 	Picture  string `json:"picture"`
 }
+
+type ChangePasswordInput struct {
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required"`
+}

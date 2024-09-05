@@ -283,3 +283,39 @@ func UserUpdate(c *gin.Context) {
 		},
 	})
 }
+
+func ChangePassword(c *gin.Context) {
+	user, exists := c.Get("currentUser")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	currentUser := user.(models.User)
+
+	var input utils.ChangePasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(currentUser.Password), []byte(input.CurrentPassword))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	currentUser.Password = string(hashedPassword)
+	if err := initializers.DB.Save(&currentUser).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
+}
